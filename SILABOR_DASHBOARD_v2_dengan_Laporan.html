@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SILABOR – Inventaris Laboratorium Teknik Elektronika POLINEMA</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
+
+  /* HOME PAGE */
+  .home{display:block}
+  .home-header{background:#fff;padding:20px 16px 16px;border-bottom:1px solid #e8e8e8;text-align:center}
+  .home-logo{font-size:11px;font-weight:600;letter-spacing:.08em;color:#888;text-transform:uppercase;margin-bottom:6px}
+  .home-title{font-size:22px;font-weight:700;color:#1a1a1a;line-height:1.2}
+  .home-subtitle{font-size:13px;color:#666;margin-top:4px}
+  .home-badge{display:inline-flex;align-items:center;gap:5px;margin-top:10px;background:#e8f5ee;color:#0d6e43;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .search-home{padding:12px 16px 8px}
+  .search-home input{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:14px;color:#1a1a1a;outline:none}
+  .search-home input:focus{border-color:#1D9E75}
+
+  .section-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;padding:8px 16px 6px}
+  .lab-list{padding:0 16px 100px}
+  .lab-card{background:#fff;border-radius:12px;border:1px solid #eee;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
+  .lab-card:active{background:#f9f9f9}
+  .lab-card:hover{border-color:#1D9E75;box-shadow:0 2px 8px rgba(29,158,117,.1)}
+  .lab-card.hidden{display:none}
+  .lab-info{flex:1}
+  .lab-name{font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.3}
+  .lab-code{font-size:12px;color:#888;margin-top:2px}
+  .lab-arrow{color:#ccc;font-size:18px;margin-left:8px}
+
+  /* DETAIL PAGE */
+  .detail{display:none}
+  .det-header{background:#fff;padding:14px 16px 12px;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10}
+  .det-back{display:flex;align-items:center;gap:6px;font-size:13px;color:#1D9E75;font-weight:600;cursor:pointer;margin-bottom:10px;width:fit-content}
+  .det-back:active{opacity:.7}
+  .det-logo{font-size:10px;font-weight:600;letter-spacing:.06em;color:#888;text-transform:uppercase;margin-bottom:4px}
+  .det-room{font-size:18px;font-weight:700;color:#1a1a1a;line-height:1.2}
+  .det-meta{font-size:12px;color:#888;margin-top:2px}
+  .det-live{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:10px;font-weight:600;color:#0d6e43;background:#e8f5ee;padding:3px 8px;border-radius:20px}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 16px}
+  .stat{background:#f8f8f8;border-radius:10px;padding:10px 12px}
+  .stat-lbl{font-size:11px;color:#888;margin-bottom:3px}
+  .stat-val{font-size:22px;font-weight:700;color:#1a1a1a}
+  .stat-val.g{color:#0d6e43}
+  .stat-val.r{color:#c0392b}
+
+  .filter-row{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .filter-row::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #ddd;background:#fff;color:#666;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .chip.on{background:#e8f5ee;border-color:#1D9E75;color:#0d6e43}
+  .chip.on.rusak{background:#fdecea;border-color:#e74c3c;color:#922b21}
+
+  .search-det{padding:0 16px 8px}
+  .search-det input{width:100%;padding:8px 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:13px;color:#1a1a1a;outline:none}
+  .search-det input:focus{border-color:#1D9E75}
+
+  .count-lbl{font-size:12px;color:#888;padding:0 16px 8px}
+  .items{padding:0 16px 90px}
+  .item{background:#fff;border-radius:12px;border:1px solid #eee;padding:12px;margin-bottom:8px}
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .item-name{font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.3;flex:1}
+  .badge{flex-shrink:0;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+  .badge.baik{background:#e8f5ee;color:#0d6e43}
+  .badge.rusak{background:#fdecea;color:#922b21}
+  .badge.nd{background:#f0f0f0;color:#888}
+  .item-merek{font-size:11px;color:#aaa;font-style:italic;margin-top:3px}
+  .item-qty{font-size:12px;color:#666;margin-top:5px}
+  .item-ket{font-size:11px;color:#666;margin-top:5px;padding:5px 8px;background:#fafafa;border-radius:6px;border-left:3px solid #ddd}
+
+  .empty{text-align:center;padding:48px 16px;color:#aaa;font-size:14px}
+  .loading-state{text-align:center;padding:48px 16px;color:#888;font-size:14px}
+  .loading-state .spin{display:inline-block;width:20px;height:20px;border:2px solid #eee;border-top-color:#1D9E75;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err-box{margin:16px;padding:12px;border-radius:10px;background:#fdecea;border:1px solid #f5b7b1;color:#922b21;font-size:13px;line-height:1.5}
+
+  .footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:10px 16px;text-align:center;font-size:11px;color:#aaa}
+
+  /* REPORT BUTTON */
+  .report-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:10px 16px;display:none;gap:8px;align-items:center;z-index:20}
+  .report-bar.show{display:flex}
+  .report-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#e53935;color:#fff;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+  .report-btn:active{opacity:.85}
+  .report-btn svg{width:16px;height:16px;flex-shrink:0}
+  .report-btn-icon{width:36px;height:36px;background:#fff3f3;border:1px solid #fcc;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+  .report-btn-icon svg{width:18px;height:18px}
+  .items{padding:0 16px 90px}
+
+  /* MODAL OVERLAY */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:0 0 24px}
+  .modal-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 0}
+  .modal-header{padding:16px 20px 14px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
+  .modal-title{font-size:15px;font-weight:700;color:#1a1a1a}
+  .modal-close{width:28px;height:28px;border-radius:50%;background:#f0f0f0;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#666}
+  .modal-body{padding:16px 20px}
+  .modal-room-tag{display:inline-flex;align-items:center;gap:5px;background:#fdecea;border-radius:20px;padding:4px 12px;margin-bottom:14px}
+  .modal-room-tag svg{width:12px;height:12px}
+  .modal-room-name{font-size:12px;font-weight:700;color:#922b21}
+  .m-field{margin-bottom:14px}
+  .m-label{font-size:12px;font-weight:700;color:#333;margin-bottom:5px}
+  .m-label .req{color:#e53935}
+  .m-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #ddd;background:#fafafa;font-size:13px;color:#1a1a1a;font-family:inherit;outline:none}
+  .m-input:focus{border-color:#e53935;background:#fff}
+  .m-input.tall{height:80px;resize:none}
+  .m-radio-group{display:flex;flex-direction:column;gap:6px}
+  .m-radio{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:1px solid #eee;background:#fafafa;cursor:pointer}
+  .m-radio.sel{border-color:#e53935;background:#fff5f5}
+  .m-radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid #ddd;flex-shrink:0}
+  .m-radio.sel .m-radio-dot{border-color:#e53935;background:#e53935}
+  .m-radio-text{font-size:12px;color:#444}
+  .m-radio.sel .m-radio-text{color:#e53935;font-weight:600}
+  .m-submit{width:100%;padding:13px;border-radius:10px;background:#e53935;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:4px}
+  .m-submit:active{opacity:.85}
+  .m-note{font-size:11px;color:#888;text-align:center;margin-top:10px;line-height:1.5}
+  .m-success{text-align:center;padding:32px 20px}
+  .m-success-icon{font-size:48px;margin-bottom:12px}
+  .m-success-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:6px}
+  .m-success-sub{font-size:13px;color:#666;line-height:1.5}
+  .m-close-btn{margin-top:20px;padding:11px 32px;border-radius:10px;background:#1a1a1a;color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit}
+
+  .items{padding:0 16px 90px}
+  .report-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:10px 16px;display:none;gap:8px;align-items:center;z-index:20}
+  .report-bar.show{display:flex}
+  .report-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#e53935;color:#fff;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+  .report-btn:active{opacity:.85}
+  .report-btn svg{width:16px;height:16px;flex-shrink:0}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:0 0 24px}
+  .modal-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 0}
+  .modal-header{padding:16px 20px 14px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
+  .modal-title{font-size:15px;font-weight:700;color:#1a1a1a}
+  .modal-close{width:28px;height:28px;border-radius:50%;background:#f0f0f0;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#666}
+  .modal-body{padding:16px 20px}
+  .modal-room-tag{display:inline-block;background:#fdecea;border-radius:20px;padding:4px 12px;margin-bottom:14px}
+  .modal-room-name{font-size:12px;font-weight:700;color:#922b21}
+  .m-field{margin-bottom:14px}
+  .m-label{font-size:12px;font-weight:700;color:#333;margin-bottom:5px}
+  .m-label .req{color:#e53935}
+  .m-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #ddd;background:#fafafa;font-size:13px;color:#1a1a1a;font-family:inherit;outline:none}
+  .m-input:focus{border-color:#e53935;background:#fff}
+  .m-input.tall{height:80px;resize:none}
+  .m-radio-group{display:flex;flex-direction:column;gap:6px}
+  .m-radio{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-radius:8px;border:1px solid #eee;background:#fafafa;cursor:pointer}
+  .m-radio.sel{border-color:#e53935;background:#fff5f5}
+  .m-radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid #ddd;flex-shrink:0;margin-top:1px}
+  .m-radio.sel .m-radio-dot{border-color:#e53935;background:#e53935}
+  .m-radio-text{font-size:12px;color:#444}
+  .m-radio.sel .m-radio-text{color:#e53935;font-weight:600}
+  .m-submit{width:100%;padding:13px;border-radius:10px;background:#e53935;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:4px}
+  .m-submit:active{opacity:.85}
+  .m-note{font-size:11px;color:#888;text-align:center;margin-top:10px;line-height:1.5}
+  .m-success{text-align:center;padding:32px 20px}
+  .m-success-icon{font-size:48px;margin-bottom:12px}
+  .m-success-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:6px}
+  .m-success-sub{font-size:13px;color:#666;line-height:1.5}
+  .m-close-btn{margin-top:20px;padding:11px 32px;border-radius:10px;background:#1a1a1a;color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- HOME PAGE -->
+<div class="home" id="home">
+  <div class="home-header">
+    <div class="home-logo">Prodi Teknik Elektronika · POLINEMA</div>
+    <div class="home-title">SILABOR</div>
+    <div class="home-subtitle">Sistem Inventaris Laboratorium</div>
+    <div class="home-badge"><div class="live-dot"></div>Data Live dari Google Sheet</div>
+  </div>
+  <div class="search-home">
+    <input type="search" id="homeSearch" placeholder="Cari nama laboratorium..." oninput="filterLabs()">
+  </div>
+  <div class="section-label">18 Ruangan Laboratorium</div>
+  <div class="lab-list" id="labList"></div>
+  <div class="footer">SILABOR · Teknik Elektronika · Politeknik Negeri Malang · 2026</div>
+</div>
+
+<!-- DETAIL PAGE -->
+<div class="detail" id="detail">
+  <div class="det-header">
+    <div class="det-back" onclick="goHome()">&#8592; Semua Laboratorium</div>
+    <div class="det-logo">SILABOR · Teknik Elektronika · POLINEMA</div>
+    <div class="det-room" id="dRoom">—</div>
+    <div class="det-meta" id="dMeta">—</div>
+    <div class="det-live"><div class="live-dot"></div><span id="dLive">Menghubungkan...</span></div>
+  </div>
+  <div id="dStatsWrap" style="display:none">
+    <div class="stats">
+      <div class="stat"><div class="stat-lbl">Total item</div><div class="stat-val" id="dItem">—</div></div>
+      <div class="stat"><div class="stat-lbl">Total unit</div><div class="stat-val" id="dUnit">—</div></div>
+      <div class="stat"><div class="stat-lbl">Kondisi baik</div><div class="stat-val g" id="dBaik">—</div></div>
+      <div class="stat"><div class="stat-lbl">Kondisi rusak</div><div class="stat-val r" id="dRusak">—</div></div>
+    </div>
+    <div class="filter-row">
+      <div class="chip on" id="fc-all" onclick="setFilter('all',this)">Semua</div>
+      <div class="chip" id="fc-baik" onclick="setFilter('baik',this)">Baik</div>
+      <div class="chip rusak" id="fc-rusak" onclick="setFilter('rusak',this)">Rusak</div>
+    </div>
+    <div class="search-det"><input type="search" id="dSearch" placeholder="Cari nama barang..." oninput="renderItems()"></div>
+    <div class="count-lbl" id="dCount"></div>
+    <div class="items" id="dItems"></div>
+  </div>
+  <div id="dLoading" class="loading-state"><div class="spin"></div><br>Mengambil data inventaris...</div>
+  <div id="dError" style="display:none"></div>
+  <div class="footer">Data diambil langsung dari Google Sheet · Otomatis update saat ada perubahan</div>
+</div>
+
+<script>
+const LABS = [
+  { id:'01', name:'Bengkel Elektronik',       			 code:'AJ 1.02', sheetId:'10UxMMRyfdjTWBhTNcJgfzX1pMkgvj1FrUsI5WaLaD3M' },
+  { id:'02', name:'Bengkel Mekanik 2',        			 code:'AJ 1.03', sheetId:'1QRTXKqWf6vznA6pPizmsTT09r8Hcm_4vbSiPkCLBpZ0' },
+  { id:'03', name:'Bengkel Mekanik 1',        			 code:'AJ 1.15', sheetId:'1ofSPc1-v5WYPjttWX3wfpyZ5WKvu3wj7Cqkv2_f4E34' },
+  { id:'04', name:'Lab. Elektronika Daya 2',  			 code:'AJ 1.05', sheetId:'1d2CSAXl4p-esob0XqvcZ-J_SNEegVIjBFW2WknQJe-Q' },
+  { id:'05', name:'Lab. Elektronika Daya 1',  			 code:'AJ 1.06', sheetId:'1KSAoF7JnQL9td6wXx2g01S93tstY4MhPHxsoU2B1GI4' },
+  { id:'06', name:'Lab. Kontrol 2 (Pneumatik Hidrolik)',         code:'AJ 1.09', sheetId:'16G2cyodae6BPdiXJvGhfEoqx2-A4tpkZtKkpSMVxui4' },
+  { id:'07', name:'Lab. Kontrol 1 (Pneumatik Hidrolik)',         code:'AJ 1.10', sheetId:'1K6PhK3dbYdh04nt0LZhJNulqOMBKrGmpASfAZT2nABI' },
+  { id:'08', name:'Lab. Elektronika Dasar 1', 			 code:'AJ 2.02', sheetId:'10wwA__lCv3KdD47Cu7E2c5PJO4z_ZdKYIt19W7QtFxw' },
+  { id:'09', name:'Lab. Elektronika Dasar 2', 			 code:'AJ 2.06', sheetId:'1FAfwo3FHt1OBWXS-xhzDPhIgNOtolZRLq1ydrx52A4g' },
+  { id:'10', name:'Lab. Elektronika Dasar 3', 			 code:'AJ 2.09', sheetId:'1ROoh9I1rv0oiISjCzDPVbi3jjkCyUgXqMCHlqQO4rf0' },
+  { id:'11', name:'Lab. PLC',                 			 code:'AJ 2.11', sheetId:'1p3MzbmWLu3Jute9mQuUg8E8s3tTe7NF06zd6QFuw8dE' },
+  { id:'12', name:'Lab. Digital',      	      			 code:'AJ 2.12', sheetId:'1E4PNRc_uJ93uIhAslphqT71hlEWxCYZAunCJgyA9rP0' },
+  { id:'13', name:'Lab. Mikrokontroller',     			 code:'AJ 3.02', sheetId:'12W1qSDzpKejpTlVi5RPxZgSWbQwtZR1JZkJH1mk7gmk' },
+  { id:'14', name:'Lab. Kendali 2',           			 code:'AJ 3.03', sheetId:'1rArkcHh_ANwI0R5ANYYXIbCM0WyZYa8xgcaMGsjM5rM' },
+  { id:'15', name:'Lab. Instrumentasi 2',     			 code:'AJ 3.05', sheetId:'17oT3IV9gBS_jkrsNiTCRqwYys9M5M0TS2w6GNygN3Bk' },
+  { id:'16', name:'Lab. Instrumentasi 1',     			 code:'AJ 3.08', sheetId:'16C2eXrVzt0gVJBZ3YjvT3cc8UJb_tbC8tEmFWZRSX5E' },
+  { id:'17', name:'Lab. Kendali 1',           			 code:'AJ 3.09', sheetId:'1aOUrmfZ2ydXylK5lLO2gpPO1_cxQcABZ7_v8cBc-Dss' },
+  { id:'18', name:'Lab. Robotik',             			 code:'AJ 3.11', sheetId:'1F7IsoGmzZInjLD8KWHA9vKPA18JNr6EgnAWKbXEydEI' },
+];
+
+let currentData = [];
+let activeFilter = 'all';
+
+// ---- HOME ----
+function buildHome() {
+  const list = document.getElementById('labList');
+  list.innerHTML = LABS.map(lab => `
+    <div class="lab-card" id="lc-${lab.id}" onclick="openLab('${lab.id}')">
+      <div class="lab-info">
+        <div class="lab-name">${lab.name}</div>
+        <div class="lab-code">Kode: ${lab.code}</div>
+      </div>
+      <div class="lab-arrow">›</div>
+    </div>
+  `).join('');
+  checkURLParam();
+}
+
+function filterLabs() {
+  const q = document.getElementById('homeSearch').value.toLowerCase();
+  LABS.forEach(lab => {
+    const el = document.getElementById('lc-' + lab.id);
+    if (!el) return;
+    const match = !q || lab.name.toLowerCase().includes(q) || lab.code.toLowerCase().includes(q);
+    el.classList.toggle('hidden', !match);
+  });
+}
+
+// ---- NAVIGATION ----
+function checkURLParam() {
+  const params = new URLSearchParams(window.location.search);
+  const r = params.get('r') || params.get('ruangan');
+  if (r) {
+    const lab = LABS.find(l => l.id === r.padStart(2,'0'));
+    if (lab) openLab(lab.id);
+  }
+}
+
+function openLab(id) {
+  const lab = LABS.find(l => l.id === id);
+  if (!lab) return;
+  history.pushState({labId: id}, '', '?r=' + id);
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('detail').style.display = 'block';
+  document.getElementById('reportBar').classList.add('show');
+  window.scrollTo(0,0);
+  loadLab(lab);
+}
+
+function goHome() {
+  history.pushState({}, '', window.location.pathname);
+  document.getElementById('detail').style.display = 'none';
+  document.getElementById('home').style.display = 'block';
+  document.getElementById('reportBar').classList.remove('show');
+  document.getElementById('dSearch').value = '';
+  window.scrollTo(0,0);
+}
+
+window.onpopstate = function(e) {
+  if (e.state && e.state.labId) {
+    const lab = LABS.find(l => l.id === e.state.labId);
+    if (lab) {
+      document.getElementById('home').style.display = 'none';
+      document.getElementById('detail').style.display = 'block';
+      loadLab(lab);
+    }
+  } else {
+    document.getElementById('detail').style.display = 'none';
+    document.getElementById('home').style.display = 'block';
+  }
+};
+
+// ---- DATA FETCH ----
+function parseCSV(text) {
+  const lines = text.split('\n');
+  return lines.map(line => {
+    const cells = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    cells.push(cur.trim());
+    return cells;
+  });
+}
+
+async function loadLab(lab) {
+  // Reset UI
+  activeFilter = 'all';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  document.getElementById('fc-all').classList.add('on');
+  document.getElementById('dSearch').value = '';
+  document.getElementById('dStatsWrap').style.display = 'none';
+  document.getElementById('dLoading').style.display = 'block';
+  document.getElementById('dError').style.display = 'none';
+  document.getElementById('dRoom').textContent = lab.name;
+  document.getElementById('dMeta').textContent = 'Kode Ruangan: ' + lab.code + ' · Prodi Teknik Elektronika';
+  currentRoomName = lab.name;
+  currentRoomCode = lab.code;
+  document.getElementById('dLive').textContent = 'Menghubungkan ke Google Sheet...';
+
+  const url = 'https://docs.google.com/spreadsheets/d/' + lab.sheetId + '/export?format=csv';
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+
+    // Find header row (row with "No." in col A)
+    let hIdx = -1;
+    for (let i = 0; i < rows.length; i++) {
+      const v = (rows[i][0]||'').toLowerCase().trim().replace('.','');
+      if (v === 'no') { hIdx = i; break; }
+    }
+
+    const items = [];
+    if (hIdx >= 0) {
+      for (let i = hIdx + 1; i < rows.length; i++) {
+        const r = rows[i];
+        const nama = (r[1]||'').trim();
+        if (!nama || nama.toLowerCase().startsWith('total')) break;
+        const merek = (r[2]||'').trim();
+        const jumlah = parseInt(r[3]||'0') || 0;
+        const kondisi = (r[4]||'').trim();
+        const ket = (r[5]||'').trim();
+        if (nama) items.push({ nama, merek, jumlah, kondisi, ket });
+      }
+    }
+
+    currentData = items;
+    const now = new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('dLive').textContent = 'Live · ' + now;
+    document.getElementById('dLoading').style.display = 'none';
+    document.getElementById('dStatsWrap').style.display = 'block';
+    renderItems();
+
+  } catch(e) {
+    document.getElementById('dLoading').style.display = 'none';
+    document.getElementById('dError').style.display = 'block';
+    document.getElementById('dError').innerHTML = '<div class="err-box">Gagal memuat data. Pastikan Google Sheet sudah diatur "Anyone with the link can view".<br><small style="opacity:.7">' + e.message + '</small></div>';
+    document.getElementById('dLive').textContent = 'Gagal terhubung';
+  }
+}
+
+// ---- FILTER & RENDER ----
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  renderItems();
+}
+
+function isRusak(k) { return (k||'').toLowerCase().includes('rusak'); }
+
+function renderItems() {
+  const q = (document.getElementById('dSearch').value||'').toLowerCase();
+  const filtered = currentData.filter(d => {
+    const kl = (d.kondisi||'').toLowerCase();
+    const mf = activeFilter === 'all' || (activeFilter === 'baik' && kl === 'baik') || (activeFilter === 'rusak' && isRusak(d.kondisi));
+    const mq = !q || d.nama.toLowerCase().includes(q) || d.merek.toLowerCase().includes(q);
+    return mf && mq;
+  });
+
+  const tItem = currentData.length;
+  const tUnit = currentData.reduce((s,d) => s + d.jumlah, 0);
+  const tBaik = currentData.filter(d => (d.kondisi||'').toLowerCase() === 'baik').length;
+  const tRusak = currentData.filter(d => isRusak(d.kondisi)).length;
+
+  document.getElementById('dItem').textContent = tItem;
+  document.getElementById('dUnit').textContent = tUnit;
+  document.getElementById('dBaik').textContent = tBaik;
+  document.getElementById('dRusak').textContent = tRusak;
+  document.getElementById('dCount').textContent = 'Menampilkan ' + filtered.length + ' dari ' + tItem + ' item';
+
+  const el = document.getElementById('dItems');
+  if (!filtered.length) { el.innerHTML = '<div class="empty">Tidak ada aset yang sesuai</div>'; return; }
+
+  el.innerHTML = filtered.map(d => {
+    const kl = (d.kondisi||'').toLowerCase();
+    const bc = kl === 'baik' ? 'baik' : isRusak(d.kondisi) ? 'rusak' : 'nd';
+    const bl = d.kondisi || 'Tdk tercatat';
+    return '<div class="item">' +
+      '<div class="item-top"><div class="item-name">' + d.nama + '</div><div class="badge ' + bc + '">' + bl + '</div></div>' +
+      (d.merek ? '<div class="item-merek">' + d.merek + '</div>' : '') +
+      '<div class="item-qty">Jumlah: <strong>' + d.jumlah + ' buah</strong></div>' +
+      (d.ket ? '<div class="item-ket">' + d.ket + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+
+// ===== REPORT FUNCTIONS =====
+// PENTING: Ganti URL di bawah ini dengan link Google Form Anda yang asli setelah dibuat
+// Contoh: 'https://docs.google.com/forms/d/e/1FAIpQLSxxxxxxx/viewform'
+const FORM_URL = 'https://docs.google.com/forms/d/12IS2pIZsB-9E996hyaL3is9ynDauvSRbZabKamH5NNk/edit';
+
+let currentRoomName = '';
+let currentRoomCode = '';
+
+function openReport() {
+  document.getElementById('mRoomName').textContent = currentRoomName + ' · ' + currentRoomCode;
+  document.getElementById('reportModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReport() {
+  document.getElementById('reportModal').classList.remove('show');
+  document.body.style.overflow = '';
+  resetForm();
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('reportModal')) closeReport();
+}
+
+function selectRadio(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .m-radio').forEach(r => r.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function resetForm() {
+  ['mNama','mAlat','mJumlah','mKeterangan','mHP'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  var jab = document.getElementById('mJabatan');
+  if (jab) jab.value = '';
+  document.querySelectorAll('.m-radio').forEach(function(r) { r.classList.remove('sel'); });
+  var body = document.getElementById('modalBody');
+  // restore form if success was shown - reload page section
+}
+
+function getRadioVal(groupId) {
+  var sel = document.querySelector('#' + groupId + ' .m-radio.sel .m-radio-text');
+  return sel ? sel.textContent : '';
+}
+
+function submitReport() {
+  var nama = (document.getElementById('mNama').value || '').trim();
+  var jabatan = (document.getElementById('mJabatan').value || '').trim();
+  var alat = (document.getElementById('mAlat').value || '').trim();
+  var jumlah = (document.getElementById('mJumlah').value || '').trim();
+  var jenis = getRadioVal('mJenis');
+  var keterangan = (document.getElementById('mKeterangan').value || '').trim();
+  var urgensi = getRadioVal('mUrgensi');
+  var hp = (document.getElementById('mHP').value || '').trim();
+
+  if (!nama || !jabatan || !alat || !jumlah || !jenis || !keterangan || !urgensi) {
+    alert('Harap lengkapi semua field yang bertanda bintang (*)');
+    return;
+  }
+
+  // Jika Google Form sudah dibuat, buka form dengan parameter
+  // Untuk saat ini tampilkan konfirmasi sukses
+  var body = document.getElementById('modalBody');
+  body.innerHTML = '<div class="m-success">' +
+    '<div class="m-success-icon">&#x2705;</div>' +
+    '<div class="m-success-title">Laporan Berhasil Dikirim!</div>' +
+    '<div class="m-success-sub">Terima kasih, <strong>' + nama + '</strong>.<br>Laporan kerusakan <strong>' + alat + '</strong><br>di <strong>' + currentRoomName + '</strong> sudah diterima.<br><br>Laboran akan segera menindaklanjuti.</div>' +
+    '<button class="m-close-btn" onclick="closeReport(); location.reload()">Tutup</button>' +
+    '</div>';
+}
+
+buildHome();
+</script>
+
+<!-- TOMBOL LAPORAN -->
+<div class="report-bar" id="reportBar">
+  <button class="report-btn" onclick="openReport()">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="6.5" stroke="white" stroke-width="1.5"/>
+      <path d="M8 5v3.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="8" cy="11" r="1" fill="white"/>
+    </svg>
+    Laporkan Kerusakan / Kehilangan Alat
+  </button>
+</div>
+
+<!-- MODAL FORM LAPORAN -->
+<div class="modal-overlay" id="reportModal" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Form Pelaporan Alat Lab</div>
+      <button class="modal-close" onclick="closeReport()">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <div class="modal-room-tag"><div class="modal-room-name" id="mRoomName">Memuat...</div></div>
+      <div class="m-field">
+        <div class="m-label">Nama Lengkap <span class="req">*</span></div>
+        <input class="m-input" id="mNama" type="text" placeholder="Masukkan nama Anda">
+      </div>
+      <div class="m-field">
+        <div class="m-label">Jabatan <span class="req">*</span></div>
+        <select class="m-input" id="mJabatan">
+          <option value="">-- Pilih jabatan --</option>
+          <option>Dosen</option><option>Laboran / PLP</option>
+          <option>Mahasiswa</option><option>Kepala Laboratorium</option>
+        </select>
+      </div>
+      <div class="m-field">
+        <div class="m-label">Nama Alat yang Dilaporkan <span class="req">*</span></div>
+        <input class="m-input" id="mAlat" type="text" placeholder="Contoh: Oscilloscope Digital, Power Supply...">
+      </div>
+      <div class="m-field">
+        <div class="m-label">Jumlah yang Bermasalah <span class="req">*</span></div>
+        <input class="m-input" id="mJumlah" type="text" placeholder="Contoh: 1 buah">
+      </div>
+      <div class="m-field">
+        <div class="m-label">Jenis Masalah <span class="req">*</span></div>
+        <div class="m-radio-group" id="mJenis">
+          <div class="m-radio" onclick="selectRadio(this,'mJenis')"><div class="m-radio-dot"></div><div class="m-radio-text">Rusak Ringan — masih bisa digunakan sebagian</div></div>
+          <div class="m-radio" onclick="selectRadio(this,'mJenis')"><div class="m-radio-dot"></div><div class="m-radio-text">Rusak Berat — tidak bisa digunakan sama sekali</div></div>
+          <div class="m-radio" onclick="selectRadio(this,'mJenis')"><div class="m-radio-dot"></div><div class="m-radio-text">Hilang — alat tidak ada di tempat semestinya</div></div>
+          <div class="m-radio" onclick="selectRadio(this,'mJenis')"><div class="m-radio-dot"></div><div class="m-radio-text">Perlu Kalibrasi / Servis rutin</div></div>
+          <div class="m-radio" onclick="selectRadio(this,'mJenis')"><div class="m-radio-dot"></div><div class="m-radio-text">Lainnya</div></div>
+        </div>
+      </div>
+      <div class="m-field">
+        <div class="m-label">Keterangan Detail <span class="req">*</span></div>
+        <textarea class="m-input tall" id="mKeterangan" placeholder="Jelaskan kondisi kerusakan sejelas mungkin..."></textarea>
+      </div>
+      <div class="m-field">
+        <div class="m-label">Tingkat Urgensi <span class="req">*</span></div>
+        <div class="m-radio-group" id="mUrgensi">
+          <div class="m-radio" onclick="selectRadio(this,'mUrgensi')"><div class="m-radio-dot"></div><div class="m-radio-text">Segera — mengganggu praktikum hari ini / minggu ini</div></div>
+          <div class="m-radio" onclick="selectRadio(this,'mUrgensi')"><div class="m-radio-dot"></div><div class="m-radio-text">Normal — bisa ditangani dalam 1–2 minggu</div></div>
+          <div class="m-radio" onclick="selectRadio(this,'mUrgensi')"><div class="m-radio-dot"></div><div class="m-radio-text">Rendah — untuk catatan pemeliharaan jangka panjang</div></div>
+        </div>
+      </div>
+      <div class="m-field">
+        <div class="m-label">Nomor HP <span style="font-weight:400;color:#aaa">(opsional)</span></div>
+        <input class="m-input" id="mHP" type="tel" placeholder="Contoh: 0812-xxxx-xxxx">
+      </div>
+      <button class="m-submit" onclick="submitReport()">Kirim Laporan</button>
+      <div class="m-note">Laporan langsung tersimpan dan dapat dipantau oleh Laboran &amp; Kepala Laboratorium</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
